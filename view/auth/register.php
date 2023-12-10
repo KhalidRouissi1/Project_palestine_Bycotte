@@ -7,32 +7,46 @@ $username = "root";
 $password = "";
 $database = "psproject";
 $message = "";
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    try {
+        $username = $_POST["username"];
+        $email = $_POST["email"];
+        $password = $_POST["password"];
+        $bio = $_POST["bio"];
 
-try {
-    $username=  $_POST["username"];
-    $email=  $_POST["email"];
-    $password=  $_POST["password"];
-    $bio = $_POST["bio"];
-    $avatar_url = $_POST["avatar_url"];
-    $user=new UserInfo($email,$username,$password,$bio,$avatar_url);
-    $userCtrl=new UserController();
-    
-    if (isset($_POST["register"])) {
-     
-        if (empty($username) || empty($email) || empty($password)) {
-            $message = '<label>All fields are required</label>';
+        // Put the image in a file 
+        $uploadDir = __DIR__ . "/../../public/uploads/";
+
+        // Check if the form has been submitted with a file
+        if (isset($_FILES["avatar_url"])) {
+            $uploadedFileName = basename($_FILES["avatar_url"]["name"]);
+            $uploadedFilePath = $uploadDir . $uploadedFileName;
+
+            if (move_uploaded_file($_FILES["avatar_url"]["tmp_name"], $uploadedFilePath)) {
+                $userCtrl = new UserController();
+
+                if (isset($_POST["register"])) {
+                    if (empty($username) || empty($email) || empty($password)) {
+                        $message = '<label>All fields are required</label>';
+                    } else {
+                        // Assuming UserInfo is a class with constructor
+                        $userInfo = new UserInfo( $email, $username,$password, $bio,$uploadedFileName);
+                        $userCtrl->register($userInfo);
+                    }
+                } elseif (isset($_POST["login"])) {
+                    header("Location: login.php");
+                    exit();
+                }
+            } else {
+                $message = '<label>Failed to upload the file</label>';
+            }
         } else {
-             $userCtrl->register($user);
+            $message = '<label>File not provided</label>';
         }
-
-    } elseif (isset($_POST["login"])) {
-        header("Location: login.php");
-        exit();
+    } catch (Exception $error) {
+        $message = $error->getMessage();
     }
-} catch (PDOException $error) {
-    $message = $error->getMessage();
-}
 }
 ?>
 
@@ -47,7 +61,7 @@ try {
 </head>
 
 <body>
-    <br />  
+    <br />
     <div class="container" style="width:500px;">
         <?php
         if (isset($message)) {
@@ -55,7 +69,7 @@ try {
         }
         ?>
         <h3 align="">Register</h3><br />
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             <label>Username</label>
             <input type="text" name="username" class="form-control" />
             <br />
@@ -70,12 +84,11 @@ try {
             <input type="text" name="bio" class="form-control" />
             <br />
             <label>Img Url</label>
-            <input type="text" name="avatar_url" class="form-control" />
-            
-            <input type="submit" name="register" class="btn btn-info" value="Register" />
-            <a href="login.php" class="btn btn-info" >Login</a>
-            <a href="../index.php" class="btn btn-info" >Go Home</a>
+            <input type="file" id="avatar_url" name="avatar_url" accept="image/*" class="control">
 
+            <input type="submit" name="register" class="btn btn-info" value="Register" />
+            <a href="login.php" class="btn btn-info">Login</a>
+            <a href="../index.php" class="btn btn-info">Go Home</a>
         </form>
     </div>
     <br />

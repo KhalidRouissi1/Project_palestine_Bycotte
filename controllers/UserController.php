@@ -1,6 +1,7 @@
 <?php
-require_once("db/config.php");
-require_once ("models/User.php");
+
+require_once(__DIR__."/../db/config.php");
+require_once(__DIR__."/../models/user.php");
 class UserController extends Connect{
     function __construct() {
     parent::__construct();
@@ -9,18 +10,21 @@ class UserController extends Connect{
     function register(UserInfo $user){
         session_start();
         $_SESSION['username'] = $user->getUsername();
-        $query = "INSERT INTO users (username, password, email) VALUES (:username, :password, :email)";
+        $query = "INSERT INTO users (username, password, email,bio,avatar_url) VALUES (:username, :password, :email,:bio,:avatar_url)";
         $statement = $this->connect->prepare($query);
         $result = $statement->execute(
             array(
                 'username' => $user->getUsername(),
                 'password' => $user->getPassword(),
                 'email' => $user->getEmail(),
+                'avatar_url' => $user->getAvatrUrl(),
+                'bio' => $user->getBio(),
             )
         );
         if ($result) {
             $message = '<label>Registration successful, please login</label>';
-            $_SESSION['username'] = $_POST["username"]; 
+            if($_POST['username']!="")
+                $_SESSION['username'] = $_POST["username"]; 
             header("Location: ../../index.php");
 
         } else {
@@ -43,7 +47,7 @@ class UserController extends Connect{
             $user = $statement->fetch(PDO::FETCH_ASSOC);
             if (password_verify($_POST["password"], $user['password'])) {
                 $_SESSION["username"] = $_POST["username"];
-                header("location: loginSuccess.php");
+                header("location: ../../index.php");
             } else {
                 $message = '<label>Wrong Password</label>';
             }
@@ -68,5 +72,14 @@ class UserController extends Connect{
         return false;
 
     }
-  
+
+    function getInfosByName($username){
+        $query = "SELECT * FROM users WHERE username = :username";
+        $statement = $this->connect->prepare($query);
+        $statement->bindParam(':username', $username);
+        $statement->execute();
+        $result = $statement->fetch(PDO::FETCH_ASSOC);
+        return $result;
+    }
+
 }    

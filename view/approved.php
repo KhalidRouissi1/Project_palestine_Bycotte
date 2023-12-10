@@ -1,3 +1,22 @@
+
+<?php
+include_once("../models/Product.php");
+include_once("../controllers/ProductController.php");
+$products = new ProductController();
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST["edit"])) {
+        $products->approve($_POST["approve"]);
+        header("Location: notApproved.php");
+    }
+    elseif (isset($_POST["delete"])) {
+
+    echo "worksss";
+
+        $products->deleteProduct($_POST["delete"]);
+        header("Location: approved.php");
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +29,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color:#025B70;
+            background-color: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -40,21 +59,16 @@
         }
 
         .menu-item {
-            background-color:  #BFA888;
+            background-color: #025B70;
             border-radius: 10px;
             padding: 10px;
             border: 1px solid #ccc;
             text-align: center;
             cursor: pointer;
-            color: #fff;
+            color: #ECD9C8;
             display: flex;
             justify-content: space-between;
         }
-        .menu-item  p{
-            color: white;
-
-        }
-
 
         .menu-item span {
             display: flex;
@@ -75,14 +89,6 @@
 
         body {
             overflow-x: hidden; /* Add this line to hide the horizontal scrollbar */
-        }
-
-
-        a{
-            text-decoration: none;
-        }
-        a li{
-            margin-bottom: 30px;
         }
 
         @media (max-width: 768px) {
@@ -114,6 +120,8 @@
             });
         });
     </script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 </head>
 <body>
 
@@ -124,23 +132,37 @@
         <?php
             include_once(__DIR__."/../controllers/ProductController.php");
             include_once(__DIR__."/../models/Product.php");
+
             $prodcuts = new ProductController();
+
             foreach ($prodcuts->showProducts() as $prodcut) {
-                echo "<from action='view/productDetails.php' method='GET'>";
-                echo "<a href='view/productDetails.php?title=".$prodcut["title"]."' class='go-link'>";
                 echo '<li class="menu-item">';
                 echo "<span>";
-                echo "<h3 name='title'>".$prodcut["title"]."</h3>";
-                echo "<p name='resonOfBycoot'>".$prodcut["reasonOfBycoot"]."</p>";
-                echo "<p style='display:none;'  name='description'>".$prodcut["description"]."</p>";
+                echo "<h3>".$prodcut["title"]."</h3>";
+                echo "<p>".$prodcut["reasonOfBycoot"]."</p>";
                 echo  "</span>";
-                echo "<img name='img' src='public/uploads/".$prodcut["productImg"]."'/>";
-                echo"</li>";
-                echo"</a>";
-                echo "</form>";
+                echo "<img src='../public/uploads/" . $prodcut["productImg"] . "'/>";
+
+                echo '<form method="post" id="editForm" action="editPage.php">';
+                echo '<input type="hidden">';
+                echo '<button name="title" value="'.$prodcut["title"].'" class="edit-btn" style="background-color: #2196F3; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;"><i class="fas fa-pen"></i></button>';
+                echo '</form>';
+                echo "</span>";
+
+
+                echo '<form method="post" id="deleteForm">';
+                echo '<input type="hidden">';
+                echo '<button name="delete" value="'.$prodcut["title"].'" class="delete-btn" style="background-color: #f44336; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;"><i class="fas fa-trash"></i></button>';
+                echo '</form>';
+                echo "</span>";
+                echo "</li>";
+
             }
         ?>
     </ul>
+    <button style="background-color: #3498db; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; text-decoration: none; cursor: pointer; transition: background-color 0.3s ease;">
+    <a href="../index.php" style="text-decoration: none; color: inherit;">Back Home</a>
+</button>
 </div>
 
 </body>

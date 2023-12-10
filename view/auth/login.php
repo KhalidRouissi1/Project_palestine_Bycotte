@@ -3,23 +3,35 @@ set_include_path(get_include_path() . PATH_SEPARATOR . 'C:\xampp\htdocs\Khaled\S
 
 include_once("../../models/User.php");
 include_once("../../controllers/UserController.php");
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-try {
-    $username=  $_POST["username"];
-    $password=  $_POST["password"];
-    $user=new UserInfo("",$username,$password,"","");
-    $userCtrl=new UserController();
-    if (isset($_POST["login"])) {
-        if (empty($_POST["username"]) || empty($_POST["password"])) {
-            $message = '<label>All fields are required</label>';
-        } else {
-            $userCtrl->login($user);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    try {
+        $username = $_POST["username"];
+        $password = $_POST["password"];
+        $user = new UserInfo("", $username, $password, "", "");
+        $userCtrl = new UserController();
+
+        if (isset($_POST["login"])) {
+            if (empty($_POST["username"]) || empty($_POST["password"])) {
+                $message = '<label>All fields are required</label>';
+            } else {
+                // Attempt to log in
+                $loginResult = $userCtrl->login($user);
+
+                // Check the result of the login operation
+                if ($loginResult === true) {
+                    // Redirect to a success page or perform other actions upon successful login
+                    header("Location: success.php");
+                    exit();
+                } else {
+                    // Display an error message for incorrect email or password
+                    $message = '<label>Password or email is incorrect</label>';
+                }
+            }
         }
+    } catch (PDOException $error) {
+        $message = $error->getMessage();
     }
-} catch (PDOException $error) {
-    $message = $error->getMessage();
-}
 }
 ?>
 <!DOCTYPE html>
